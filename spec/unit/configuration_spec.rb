@@ -7,11 +7,11 @@ RSpec.describe 'Configuration' do
         JsonApiable.configure do |c|
           c.valid_query_params = %w[filter]
         end
-  
+
         expect(JsonApiable.configuration.valid_query_params).to eq(%w[filter])
       end
     end
-    
+
     context 'when invalid value' do
       it 'raises exception' do
         expect do
@@ -47,6 +47,27 @@ RSpec.describe 'Configuration' do
           end
         end.to raise_error(JsonApiable::ConfigurationError)
       end
+    end
+  end
+
+  describe "#not_found_exception_class" do
+    it "sets value" do
+      JsonApiable.configure do |c|
+        c.not_found_exception_class = StandardError
+        end
+
+      klass = JsonApiable.configuration.not_found_exception_class
+      expect(klass).to eq(StandardError)
+    end
+  end
+
+  describe "#page_size" do
+    it "sets value" do
+      JsonApiable.configure do |c|
+        c.page_size = 10
+      end
+
+      expect(JsonApiable.configuration.page_size).to eq(10)
     end
   end
 

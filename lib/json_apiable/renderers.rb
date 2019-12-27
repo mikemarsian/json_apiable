@@ -1,5 +1,10 @@
 module JsonApiable
   module Renderers
+    def respond_to_unsupported_media_type
+      errors = [{ title: 'Unsupported Media Type', detail: 'application/vnd.api+json is expected' }]
+      json_render_errors json: errors, status: :unsupported_media_type
+    end
+
     def respond_to_unprocessable_entity(err_msg = nil)
       errors = [{ title: 'Unprocessable', detail: err_msg.to_s }]
       json_render_errors json: errors, status: :unprocessable_entity
@@ -16,17 +21,17 @@ module JsonApiable
     end
 
     def respond_to_not_found(err_msg = nil)
-      errors = [{ title: 'Not found', detail: err_msg.to_s || 'Resource not found on the server' }]
+      errors = [{ title: 'Not Found', detail: err_msg.to_s || 'Resource not found on the server' }]
       json_render_errors json: errors, status: :not_found
     end
 
     def respond_to_bad_argument(err_msg)
-      errors = [{ title: 'Invalid argument', detail: err_msg.to_s }]
+      errors = [{ title: 'Invalid Argument', detail: err_msg.to_s }]
       json_render_errors json: errors, status: :bad_request
     end
 
     def respond_to_malformed_request(err_msg = nil)
-      errors = [{ title: 'Malformed request', detail: err_msg.to_s }]
+      errors = [{ title: 'Malformed Request', detail: err_msg.to_s }]
       json_render_errors json: errors, status: :bad_request
     end
 

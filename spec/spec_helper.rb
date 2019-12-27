@@ -1,5 +1,19 @@
-require "bundler/setup"
+# frozen_string_literal: true
+
+ENV["RAILS_ENV"] = "test"
+
+require 'rubygems'
+require 'pry'
+require 'factory_bot'
+require 'factory_bot_rails'
 require "json_apiable"
+
+Dir[File.dirname(__FILE__) + '/support/**/*.rb'].each do |file|
+  # skip the dummy app
+  next if file.include?('support/rails_app')
+
+  require file
+end
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
@@ -12,6 +26,9 @@ RSpec.configure do |config|
     c.syntax = :expect
   end
 
+  config.include FactoryBot::Syntax::Methods
+
+  config.order = 'random'
   config.filter_run :focus
   config.run_all_when_everything_filtered = true
 end
