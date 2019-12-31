@@ -62,17 +62,21 @@ RSpec.describe 'Configuration' do
   end
 
   describe "#page_size" do
-    it "sets value" do
+    before do
       JsonApiable.configure do |c|
         c.page_size = 10
       end
-
+    end
+    after do
+      JsonApiable.reset
+    end
+    it "sets value" do
       expect(JsonApiable.configuration.page_size).to eq(10)
     end
   end
 
   describe ".reset" do
-    before :each do
+    before do
       JsonApiable.configure do |config|
         config.valid_query_params = config.valid_query_params + %w[user_id]
       end

@@ -161,4 +161,274 @@ RSpec.describe API::UsersController, type: :controller do
       end
     end
   end
+
+  describe 'PATCH #update' do
+    let(:user) { create(:user) }
+    subject(:patch_update) { json_api_patch :update, id: user.id, data: update_json }
+
+    context 'update attribute' do
+      context 'valid' do
+        let(:update_json) do
+          {
+              "type": 'user',
+              "id": user.id,
+              "attributes": {
+                  "name": 'John Doe'
+              }
+          }
+        end
+        it 'returns ok' do
+          patch_update
+
+          expect(response).to have_http_status(:ok)
+        end
+      end
+
+      context 'invalid' do
+        context 'is not allowed' do
+          let(:update_json) do
+            {
+                "type": 'user',
+                "id": user.id,
+                "attributes": {
+                    "date_of_birth": '1980-12-12'
+                }
+            }
+          end
+
+          it 'returns bad_request' do
+            patch_update
+
+            expect(response).to have_http_status(:bad_request)
+            expect(response.body).to eq({ 'errors' => [{
+                                                           'title' => 'Invalid Argument',
+                                                           'detail' => 'Unpermitted attribute: date_of_birth',
+                                                           'status' => '400'
+                                                       }] }.to_json)
+          end
+        end
+
+        context 'is not sane' do
+          let(:update_json) do
+            {
+              "type": 'user',
+              "id": user.id,
+              "foo": 'bar',
+              "attributes": {
+                  "name": 'Joe Doe'
+              }
+            }
+          end
+
+          it 'returns bad_request' do
+            patch_update
+
+            expect(response).to have_http_status(:bad_request)
+            expect(response.body).to eq({ 'errors' => [{
+                                                           'title' => 'Invalid Argument',
+                                                           'detail' => 'Unpermitted member: foo',
+                                                           'status' => '400'
+                                                       }] }.to_json)
+          end
+        end
+
+        context 'has no data' do
+          let(:update_json) do
+            {
+                "type": 'user',
+                "id": user.id,
+                "attributes": {
+                    "name": 'Joe Doe'
+                }
+            }
+          end
+          subject(:patch_update) { json_api_patch :update, id: user.id, dada: update_json }
+
+          it 'returns bad_request' do
+            patch_update
+
+            expect(response).to have_http_status(:bad_request)
+            expect(response.body).to eq({ 'errors' => [{
+                                                           'title' => 'Malformed Request',
+                                                           'detail' => 'param is missing or the value is empty: data',
+                                                           'status' => '400'
+                                                       }] }.to_json)
+          end
+        end
+      end
+    end
+
+    context 'update complex attribute' do
+      context 'valid' do
+        let(:update_json) do
+          {
+              "type": 'user',
+              "id": user.id,
+              "attributes": {
+                  "address":
+                      { "street": 'st. Main 10, Apt. 10',
+                        "city": 'New York',
+                        "state_code": 'NY',
+                        "zip_code": '11100',
+                        "country_code": 'US'
+                      }
+              }
+          }
+        end
+        it 'returns ok' do
+          patch_update
+
+          expect(response).to have_http_status(:ok)
+        end
+      end
+
+      context 'invalid' do
+        context 'nested param is not allowed' do
+          let(:update_json) do
+            {
+                "type": 'user',
+                "id": user.id,
+                "attributes": {
+                    "address": {
+                        "primary_street": 'st. Main 10, Apt. 10',
+                        "city": 'New York',
+                        "state_code": 'NY',
+                        "zip_code": '11100',
+                        "country_code": 'US'
+                    }
+                }
+            }
+          end
+
+          xit 'returns bad_request' do
+            patch_update
+
+            expect(response).to have_http_status(:bad_request)
+            expect(response.body).to eq({ 'errors' => [{
+                                                           'title' => 'Invalid Argument',
+                                                           'detail' => 'Unpermitted attribute: primary_street',
+                                                           'status' => '400'
+                                                       }] }.to_json)
+          end
+        end
+
+        context 'complex param is not allowed' do
+          let(:update_json) do
+            {
+                "type": 'user',
+                "id": user.id,
+                "attributes": {
+                    "addrez": {
+                        "primary_street": 'st. Main 10, Apt. 10',
+                        "city": 'New York',
+                        "state_code": 'NY',
+                        "zip_code": '11100',
+                        "country_code": 'US'
+                    }
+                }
+            }
+          end
+
+          it 'returns bad_request' do
+            patch_update
+
+            expect(response).to have_http_status(:bad_request)
+            expect(response.body).to eq({ 'errors' => [{
+                                                           'title' => 'Invalid Argument',
+                                                           'detail' => 'Unpermitted attribute: addrez',
+                                                           'status' => '400'
+                                                       }] }.to_json)
+          end
+        end
+      end
+    end
+
+    context 'update relationships' do
+      let(:post) { create(:post) }
+      let(:post2) { create(:post) }
+      context 'valid request' do
+        let(:update_json) do
+          {
+              "type": 'user',
+              "id": user.id,
+              "attributes": {
+              },
+              "relationships": {
+                  "posts": {
+                      "data": [
+                          { "type": 'post', "id": post.id.to_s },
+                          { "type": 'post', "id": post2.id.to_s }
+                      ]
+                  }
+              }
+          }
+        end
+        it 'returns ok' do
+          patch_update
+
+          expect(response).to have_http_status(:ok)
+          expect(user.reload.posts).to include(post, post2)
+        end
+      end
+
+      context 'invalid request' do
+        let(:comment) { create(:comment) }
+        context 'unpermitted' do
+          let(:update_json) do
+            {
+                "type": 'user',
+                "id": user.id,
+                "attributes": {
+                },
+                "relationships": {
+                    "comments": {
+                        "data": [
+                            { "type": 'comment', "id": comment.id.to_s }
+                        ]
+                    }
+                }
+            }
+          end
+          it 'returns bad_requets' do
+            patch_update
+
+            expect(response).to have_http_status(:bad_request)
+            expect(response.body).to eq({ 'errors' => [{
+                                                           'title' => 'Invalid Argument',
+                                                           'detail' => 'Unpermitted relationship: comments',
+                                                           'status' => '400'
+                                                       }] }.to_json)
+          end
+        end
+
+        context 'malformed' do
+          let(:update_json) do
+            {
+                "type": 'user',
+                "id": user.id,
+                "attributes": {
+                },
+                "relationship": {
+                    "posts": {
+                        "data": [
+                            { "type": 'post', "id": post.id.to_s }
+                        ]
+                    }
+                }
+            }
+          end
+          it 'returns bad_requets' do
+            patch_update
+
+            expect(response).to have_http_status(:bad_request)
+            expect(response.body).to eq({ 'errors' => [{
+                                                           'title' => 'Invalid Argument',
+                                                           'detail' => 'Unpermitted member: relationship',
+                                                           'status' => '400'
+                                                       }] }.to_json)
+          end
+        end
+      end
+    end
+  end
 end
