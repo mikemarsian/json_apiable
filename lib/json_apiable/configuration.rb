@@ -8,7 +8,7 @@ module JsonApiable
     MAX_PAGE_SIZE = 214_748_364
 
     def initialize
-      @valid_query_params = %w[id access_token filter include page]
+      @valid_query_params = %w[id user_id access_token filter include page]
       @supported_media_type_proc = nil
       @not_found_exception_class = ActiveRecord::RecordNotFound
       @page_size = DEFAULT_PAGE_SIZE
