@@ -2,11 +2,16 @@ module JsonApiable
   class Configuration
     attr_accessor :valid_query_params, :supported_media_type_proc, :not_found_exception_class, :page_size
 
+    DEFAULT_PAGE_NUMBER = 1
+    DEFAULT_PAGE_SIZE = 25
+    # 2^32 / 2 * 10: greater than which raises a java.lang.ArrayIndexOutOfBoundsException exception in Solr
+    MAX_PAGE_SIZE = 214_748_364
+
     def initialize
-      @valid_query_params = %w[access_token filter include page]
+      @valid_query_params = %w[id access_token filter include page]
       @supported_media_type_proc = nil
       @not_found_exception_class = ActiveRecord::RecordNotFound
-      @page_size = JSONAPI_DEFAULT_PAGE_SIZE
+      @page_size = DEFAULT_PAGE_SIZE
     end
 
     def valid_query_params=(value)

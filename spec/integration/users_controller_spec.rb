@@ -81,7 +81,7 @@ RSpec.describe API::UsersController, type: :controller do
               get_index
 
               expect(controller.jsonapi_page[:number]).to eq(2)
-              expect(controller.jsonapi_page[:size]).to eq(JsonApiable::JSONAPI_DEFAULT_PAGE_SIZE)
+              expect(controller.jsonapi_page[:size]).to eq(JsonApiable::PaginationParser::DEFAULT_PAGE_SIZE)
             end
           end
 

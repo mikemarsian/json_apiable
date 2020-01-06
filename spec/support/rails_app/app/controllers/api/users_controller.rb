@@ -18,11 +18,13 @@ class API::UsersController < API::BaseController
   protected
 
   def jsonapi_allowed_attributes
-    [:email, :name, address: %i[street city state_code zip_code country_code]]
+    [:email,
+     :name,
+     address: %i[street city state_code zip_code country_code]]
   end
 
   # Should be overwritten in specific controllers
   def jsonapi_allowed_relationships
-    %w[posts]
+    %i[posts]
   end
 end
