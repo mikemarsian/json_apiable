@@ -81,7 +81,7 @@ RSpec.describe API::UsersController, type: :controller do
               get_index
 
               expect(controller.jsonapi_page[:number]).to eq(2)
-              expect(controller.jsonapi_page[:size]).to eq(JsonApiable::PaginationParser::DEFAULT_PAGE_SIZE)
+              expect(controller.jsonapi_page[:size]).to eq(JsonApiable::Configuration::DEFAULT_PAGE_SIZE)
             end
           end
 
@@ -164,6 +164,7 @@ RSpec.describe API::UsersController, type: :controller do
 
   describe 'PATCH #update' do
     let(:user) { create(:user) }
+    let(:new_name) { 'John Doe' }
     subject(:patch_update) { json_api_patch :update, id: user.id, data: update_json }
 
     context 'update attribute' do
@@ -173,7 +174,7 @@ RSpec.describe API::UsersController, type: :controller do
               "type": 'user',
               "id": user.id,
               "attributes": {
-                  "name": 'John Doe'
+                  "name": new_name
               }
           }
         end
@@ -181,6 +182,20 @@ RSpec.describe API::UsersController, type: :controller do
           patch_update
 
           expect(response).to have_http_status(:ok)
+        end
+
+        context 'jsonapi_attribute_value' do
+          it 'when value exists' do
+            patch_update
+
+            expect(assigns(:name)).to eq(new_name)
+          end
+
+          it 'when value does not exist' do
+            patch_update
+
+            expect(assigns(:email)).to be_blank
+          end
         end
       end
 
@@ -258,7 +273,7 @@ RSpec.describe API::UsersController, type: :controller do
       end
     end
 
-    context 'update complex attribute' do
+    xcontext 'update complex attribute' do
       context 'valid' do
         let(:update_json) do
           {
@@ -300,7 +315,7 @@ RSpec.describe API::UsersController, type: :controller do
             }
           end
 
-          xit 'returns bad_request' do
+          it 'returns bad_request' do
             patch_update
 
             expect(response).to have_http_status(:bad_request)

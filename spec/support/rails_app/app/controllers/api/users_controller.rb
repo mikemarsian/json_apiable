@@ -11,6 +11,8 @@ class API::UsersController < API::BaseController
 
   def update
     @user = User.find(params[:id])
+    @name = jsonapi_attribute_value(:name)
+    @email = jsonapi_attribute_value(:email)
     @user.update_attributes!(jsonapi_assign_params)
     render json: @user
   end

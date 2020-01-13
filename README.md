@@ -1,7 +1,7 @@
 # JsonApiable
 
-JsonApiable is an includeable Ruby module that makes it easier for JSON:API Rails controllers to deal with parsing parameters and relationships,
-validating arguments, returning well-structured errors, and more - all in a Rails-friendly way.
+JsonApiable is a Ruby module that makes it easier for Rails API controllers to handle JSON:API parameter and relationship parsing,
+strong parameter validation, returning well-structured errors and more - all in a Rails-friendly way.
 
 JsonApiable doesn't assume anything about other JSON:API gems you may be using. 
 Feel free to use it in conjunction with fast_jsonapi, active_model_serializer, jsonapi-resources or any other library.
@@ -29,46 +29,88 @@ Or install it yourself as:
 class API::BaseController < ActionController::Base
   # By including JsonApiable, you get the following before/after actions in your controllers:
   # 
-  # before_action :ensure_content_type       - Ensure correct Content-Type (application/vnd.api+json) is set in the request, and return error otherise 
-  # before_action :ensure_valid_query_params - Ensure only valid query parameters are used
-  # before_action :parse_pagination          - Parse "?page:{number:1, size:25}" query hash, set defaults raise errors when invalid values received
-  #                                            Read more: https://jsonapi.org/format/#fetching-pagination 
-  # before_action :parse_include             - Parse "?include=posts.author" include directives . 
-  #                                             Read more: https://jsonapi.org/format/#fetching-includes
-  # after_action :set_content_type           - Ensure correct Content-Type (application/vnd.api+json) is set in the response
+  # before_action :ensure_jsonapi_content_type       - Ensure correct Content-Type (application/vnd.api+json) is set in 
+  #                                                    the request, and return error othewrise 
+  # before_action :ensure_jsonapi_valid_query_params - Ensure only valid query parameters are used
+  # before_action :parse_jsonapi_pagination          - Parse "?page:{number:1, size:25}" query hash, set defaults and 
+  #                                                    return errors when invalid values received
+  #                                                    Read more: https://jsonapi.org/format/#fetching-pagination 
+  # before_action :parse_jsonapi_include             - Parse "?include=posts.author" include directives . 
+  #                                                    Read more: https://jsonapi.org/format/#fetching-includes
+  # after_action :set_jsonapi_content_type           - Ensure correct Content-Type (application/vnd.api+json) is set 
+  #                                                    in the response
   
   # By including JsonApiable, you get the following exceptions handled automatically:
-  # rescue_from ArgumentError, with: :respond_to_bad_argument
-  # rescue_from ActionController::UnpermittedParameters, with: :respond_to_bad_argument
-  # rescue_from MalformedRequestError, with: :respond_to_malformed_request
-  # rescue_from UnprocessableEntityError, with: :respond_to_unprocessable_entity
-  # rescue_from ActiveRecord::RecordNotFound, with: :respond_to_not_found
+  # rescue_from ArgumentError
+  # rescue_from ActionController::UnpermittedParameters
+  # rescue_from MalformedRequestError
+  # rescue_from UnprocessableEntityError
+  # rescue_from ActiveRecord::RecordNotFound
   include JsonApiable
 end
 
 class API::PostsController < API::BaseController
   
+  # GET /v1/posts
   def index
     # pass page and include info to your logic
-    @posts = GetPostsService(jsonapi_page, jsonapi_include)
+    posts = GetPostsService.call(jsonapi_page, jsonapi_include)
     # some other gem, such as fast_jsonapi is assumed to produce the json:api output
-    render json: collection
+    render json: posts
   end
 
+  # PATCH /v1/posts/123/update
+  # { "data":
+  #    { "type": "post",
+  #      "attributes": {
+  #         "title": "My New Title"
+  #      },
+  #      "relationships": {
+  #         "author": {
+  #            "data": {
+  #                 "type": "user",
+  #                 "id": "4528"
+  #            },
+  #           "comments": {
+  #             "data": [
+  #               { "type": "comment", "id": "1489" },
+  #               { "type": "comment", "id": "1490" } 
+  #             ] 
+  #           } 
+  #         }
+  #        } 
+  #     } 
+  # }
   def update
-    @user = User.find(params[:id])
-    # turn relationships into Rails associations and assign them together with attributes as you would normally do in Rails
-    @user.update_attributes!(jsonapi_assign_params)
+    @post = Post.find(params[:id])
+
+    # turn relationships into Rails associations and assign them together with attributes 
+    # as you would normally do in Rails
+    # 
+    # jsonapi_assign_params =>
+    # { "title"=>"My New Title",
+    #   "author_id" => 4528, 
+    #   "comments_attributes"=>{
+    #         "0"=>{"id"=>"1489", "_destroy"=>"false"}, 
+    #         "1"=>{"id"=>"1490", "_destroy"=>"false"}},
+    #   "comment_ids"=>["1489", "1490"],
+    # 
+    # } 
+    @post.update_attributes!(jsonapi_assign_params)
     render json: @user
   end
 
   def create
+    # use jsonapi_attribute_present? to quickly test presence of specific attributes
+    raise UnprocessableEntityError, 'No title!' unless jsonapi_attribute_present?(:title)
+    # use jsonapi_attribute_value to get attribute values. If non-existent, nil would be returned
+    @title = jsonapi_attribute_value(:title)
     # exclude 'author' attribute from assign params, for example because it's a separate table on the DB level)
     @author_name = jsonapi_exclude_attribute(:author_name)
     # exclude 'comments' relationship from assign params, for example because we want to filter which ones are added to post
     @comments_hash = jsonapi_exclude_relationship(:comments)
     do_some_logc_with_excluded_params
-    # jsonapi_assign_params doesn't include 'author' attribute and 'comments' relationship
+    # jsonapi_assign_params wouldn't include 'author' attribute and 'comments' relationship
     User.create!(jsonapi_assign_params)
   end
 
@@ -108,6 +150,10 @@ JsonApiable.configure do |config|
 end
 ```
 
+### Limitations
+- `has_one` associations are currently not supported by `jsonapi_assign_params`. So if the updated resource
+contains an association whose foreign key exists in
+- complex attributes currently don't work
 
 ## Development
 

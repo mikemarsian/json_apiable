@@ -9,12 +9,12 @@ module JsonApiable
               :jsonapi_exclude_attributes, :jsonapi_exclude_relationships
 
   included do
-    before_action :ensure_content_type
-    before_action :ensure_valid_query_params
-    before_action :parse_pagination
-    before_action :parse_include
+    before_action :ensure_jsonapi_content_type
+    before_action :ensure_jsonapi_valid_query_params
+    before_action :parse_jsonapi_pagination
+    before_action :parse_jsonapi_include
 
-    after_action :set_content_type
+    after_action :set_jsonapi_content_type
 
     rescue_from ArgumentError, with: :respond_to_bad_argument
     rescue_from ActionController::UnpermittedParameters, with: :respond_to_bad_argument
@@ -44,6 +44,10 @@ module JsonApiable
 
   def jsonapi_attribute_present?(attrib_key)
     jsonapi_build_params.dig(:data, :attributes, attrib_key).present?
+  end
+
+  def jsonapi_attribute_value(attrib_key)
+    jsonapi_build_params.dig(:data, :attributes, attrib_key)
   end
 
   def jsonapi_assign_params
@@ -87,11 +91,11 @@ module JsonApiable
     %i[]
   end
 
-  def ensure_content_type
+  def ensure_jsonapi_content_type
     respond_to_unsupported_media_type unless supported_media_type?
   end
 
-  def ensure_valid_query_params
+  def ensure_jsonapi_valid_query_params
     invalid_params = request.query_parameters.keys.reject { |k| JsonApiable.configuration.valid_query_params.include?(k) }
     respond_to_bad_argument(invalid_params.first) if invalid_params.present?
   end
@@ -104,15 +108,15 @@ module JsonApiable
     end
   end
 
-  def set_content_type
+  def set_jsonapi_content_type
     response.headers['Content-Type'] = JSONAPI_CONTENT_TYPE
   end
 
-  def parse_pagination
+  def parse_jsonapi_pagination
     @jsonapi_page = PaginationParser.parse_pagination!(query_params, jsonapi_default_page_size)
   end
 
-  def parse_include
+  def parse_jsonapi_include
     @jsonapi_include = query_params[:include].presence&.gsub(/ /, '')&.split(',')&.map(&:to_sym).to_a
   end
 

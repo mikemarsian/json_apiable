@@ -7,6 +7,9 @@ require 'pry'
 require 'factory_bot'
 require 'factory_bot_rails'
 require "json_apiable"
+require 'rails-controller-testing'
+
+Rails::Controller::Testing.install
 
 Dir[File.dirname(__FILE__) + '/support/**/*.rb'].each do |file|
   # skip the dummy app
