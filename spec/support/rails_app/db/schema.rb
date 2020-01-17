@@ -10,7 +10,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_12_27_172713) do
+ActiveRecord::Schema.define(version: 2020_01_17_224207) do
+
+  create_table "addresses", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "street", null: false
+    t.string "city", null: false
+    t.string "state_code", null: false
+    t.string "zip_code", null: false
+    t.string "country_code", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["user_id"], name: "index_addresses_on_user_id"
+  end
 
   create_table "comments", force: :cascade do |t|
     t.text "body"

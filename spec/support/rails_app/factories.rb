@@ -19,4 +19,13 @@ FactoryBot.define do
     association :commenter, factory: :user
     association :post, factory: :post
   end
+
+  factory :address do
+    association :user, factory: :user
+    street { Faker::Address.street_name }
+    city { Faker::Address.city }
+    state_code { Faker::Address.state_abbr }
+    zip_code { Faker::Address.zip_code  }
+    country_code { 'US'  }
+  end
 end

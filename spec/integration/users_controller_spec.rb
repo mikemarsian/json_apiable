@@ -217,7 +217,7 @@ RSpec.describe API::UsersController, type: :controller do
             expect(response).to have_http_status(:bad_request)
             expect(response.body).to eq({ 'errors' => [{
                                                            'title' => 'Invalid Argument',
-                                                           'detail' => 'Unpermitted attribute: date_of_birth',
+                                                           'detail' => 'found unpermitted parameter: :date_of_birth',
                                                            'status' => '400'
                                                        }] }.to_json)
           end
@@ -241,7 +241,7 @@ RSpec.describe API::UsersController, type: :controller do
             expect(response).to have_http_status(:bad_request)
             expect(response.body).to eq({ 'errors' => [{
                                                            'title' => 'Invalid Argument',
-                                                           'detail' => 'Unpermitted member: foo',
+                                                           'detail' => 'found unpermitted parameter: :foo',
                                                            'status' => '400'
                                                        }] }.to_json)
           end
@@ -273,7 +273,7 @@ RSpec.describe API::UsersController, type: :controller do
       end
     end
 
-    xcontext 'update complex attribute' do
+    context 'update complex attribute' do
       context 'valid' do
         let(:update_json) do
           {
@@ -294,6 +294,16 @@ RSpec.describe API::UsersController, type: :controller do
           patch_update
 
           expect(response).to have_http_status(:ok)
+        end
+        it 'updates address' do
+          expect { patch_update }.to change { user.reload.address.present? }.from(false).to(true)
+
+          address = user.address
+          expect(address.street).to eq('st. Main 10, Apt. 10')
+          expect(address.city).to eq('New York')
+          expect(address.state_code).to eq('NY')
+          expect(address.zip_code).to eq('11100')
+          expect(address.country_code).to eq('US')
         end
       end
 
@@ -321,7 +331,7 @@ RSpec.describe API::UsersController, type: :controller do
             expect(response).to have_http_status(:bad_request)
             expect(response.body).to eq({ 'errors' => [{
                                                            'title' => 'Invalid Argument',
-                                                           'detail' => 'Unpermitted attribute: primary_street',
+                                                           'detail' => 'found unpermitted parameter: :primary_street',
                                                            'status' => '400'
                                                        }] }.to_json)
           end
@@ -350,7 +360,7 @@ RSpec.describe API::UsersController, type: :controller do
             expect(response).to have_http_status(:bad_request)
             expect(response.body).to eq({ 'errors' => [{
                                                            'title' => 'Invalid Argument',
-                                                           'detail' => 'Unpermitted attribute: addrez',
+                                                           'detail' => 'found unpermitted parameter: :addrez',
                                                            'status' => '400'
                                                        }] }.to_json)
           end
@@ -410,7 +420,7 @@ RSpec.describe API::UsersController, type: :controller do
             expect(response).to have_http_status(:bad_request)
             expect(response.body).to eq({ 'errors' => [{
                                                            'title' => 'Invalid Argument',
-                                                           'detail' => 'Unpermitted relationship: comments',
+                                                           'detail' => 'found unpermitted parameter: :comments',
                                                            'status' => '400'
                                                        }] }.to_json)
           end
@@ -438,7 +448,7 @@ RSpec.describe API::UsersController, type: :controller do
             expect(response).to have_http_status(:bad_request)
             expect(response.body).to eq({ 'errors' => [{
                                                            'title' => 'Invalid Argument',
-                                                           'detail' => 'Unpermitted member: relationship',
+                                                           'detail' => 'found unpermitted parameter: :relationship',
                                                            'status' => '400'
                                                        }] }.to_json)
           end

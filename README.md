@@ -150,10 +150,14 @@ JsonApiable.configure do |config|
 end
 ```
 
+### Gotchas
+- To make sure requests with invalid attributes/relationships result in a well-structured json-api error, configure your Rails app to raise
+exceptions on invalid parameters (JsonApiable will catch them and return an appropriate response). In `config/application.rb` set `config.action_controller.action_on_unpermitted_parameters = :raise`
+
 ### Limitations
-- `has_one` associations are currently not supported by `jsonapi_assign_params`. So if the updated resource
-contains an association whose foreign key exists in
-- complex attributes currently don't work
+- `has_one` associations are expected to be represented as complex-attributes on the API level. So if User `has_one` Address,
+than on the API level, JsonApiable expects address to be specified as a hash inside User's `attributes` rather than a separate relationship.
+This makes sense in most cases. If your API represantion differs, `@post.update_attributes!(jsonapi_assign_params)` assignment won't work correctly.
 
 ## Development
 
