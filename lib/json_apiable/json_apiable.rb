@@ -42,12 +42,29 @@ module JsonApiable
     yield(configuration)
   end
 
-  def jsonapi_attribute_present?(attrib_key)
-    jsonapi_build_params.dig(:data, :attributes, attrib_key).present?
+  def jsonapi_attribute(attrib_key)
+    jsonapi_build_params.dig(:data, :attributes, attrib_key)
   end
 
-  def jsonapi_attribute_value(attrib_key)
-    jsonapi_build_params.dig(:data, :attributes, attrib_key)
+  def jsonapi_attribute_present?(attrib_key)
+    jsonapi_attribute(attrib_key).present?
+  end
+
+  def jsonapi_relationship(attrib_key)
+    jsonapi_build_params.dig(:data, :relationships, attrib_key)
+  end
+
+  def jsonapi_relationship_data(attrib_key)
+    jsonapi_build_params.dig(:data, :relationships, attrib_key, :data)
+  end
+
+  def jsonapi_relationship_present?(attrib_key)
+    jsonapi_relationship(attrib_key).present?
+  end
+
+  def jsonapi_relationship_attribute(relationship, attribute)
+    [:id, :type].include?(attribute.to_sym) ? jsonapi_relationship_data(relationship)&.dig(attribute) :
+                                              jsonapi_relationship_data(relationship)&.dig(:attributes, attribute)
   end
 
   def jsonapi_assign_params
@@ -71,7 +88,8 @@ module JsonApiable
     jsonapi_build_params.dig(:data, :relationships, rel_key)
   end
 
-  # Should be overwritten in specific controllers
+  # Should be overwritten in specific controllers. If you need to manipulate params before they are parsed,
+  # that's the place to do it
   def jsonapi_build_params
     params
   end

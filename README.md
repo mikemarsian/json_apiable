@@ -103,8 +103,8 @@ class API::PostsController < API::BaseController
   def create
     # use jsonapi_attribute_present? to quickly test presence of specific attributes
     raise UnprocessableEntityError, 'No title!' unless jsonapi_attribute_present?(:title)
-    # use jsonapi_attribute_value to get attribute values. If non-existent, nil would be returned
-    @title = jsonapi_attribute_value(:title)
+    # use jsonapi_attribute to get attribute values. If non-existent, nil would be returned
+    @title = jsonapi_attribute(:title)
     # exclude 'author' attribute from assign params, for example because it's a separate table on the DB level)
     @author_name = jsonapi_exclude_attribute(:author_name)
     # exclude 'comments' relationship from assign params, for example because we want to filter which ones are added to post

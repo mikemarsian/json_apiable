@@ -184,7 +184,7 @@ RSpec.describe API::UsersController, type: :controller do
           expect(response).to have_http_status(:ok)
         end
 
-        context 'jsonapi_attribute_value' do
+        context 'jsonapi_attribute' do
           it 'when value exists' do
             patch_update
 
