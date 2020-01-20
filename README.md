@@ -1,4 +1,6 @@
 # JsonApiable
+[![Maintainability](https://api.codeclimate.com/v1/badges/add92f51e18446e44b29/maintainability)](https://codeclimate.com/github/mikemarsian/json_apiable/maintainability)
+[![Gem Version](https://badge.fury.io/rb/json_apiable.svg)](https://badge.fury.io/rb/json_apiable)
 
 JsonApiable is a Ruby module that makes it easier for Rails API controllers to handle JSON:API parameter and relationship parsing,
 strong parameter validation, returning well-structured errors and more - all in a Rails-friendly way.
