@@ -99,7 +99,7 @@ class API::PostsController < API::BaseController
     # 
     # } 
     @post.update_attributes!(jsonapi_assign_params)
-    render json: @user
+    render json: @post
   end
 
   def create
@@ -113,7 +113,7 @@ class API::PostsController < API::BaseController
     @comments_hash = jsonapi_exclude_relationship(:comments)
     do_some_logc_with_excluded_params
     # jsonapi_assign_params wouldn't include 'author' attribute and 'comments' relationship
-    User.create!(jsonapi_assign_params)
+    Post.create!(jsonapi_assign_params)
   end
 
   protected
