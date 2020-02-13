@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module JsonApiable
   module Errors
     class ApiError < StandardError; end

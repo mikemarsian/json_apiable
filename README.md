@@ -56,7 +56,7 @@ class API::PostsController < API::BaseController
   # GET /v1/posts
   def index
     # pass page and include info to your logic
-    posts = GetPostsService.call(jsonapi_page, jsonapi_include)
+    posts = GetPostsService.call(jsonapi_page_hash, jsonapi_include_array)
     # some other gem, such as fast_jsonapi is assumed to produce the json:api output
     render json: posts
   end
@@ -134,6 +134,76 @@ class API::PostsController < API::BaseController
 
 end
 ````
+### Filters
+JsonApiable supports parsing filter requests in the form `example.com/v1/posts?filter[status]=draft` and returning errors
+in case provided filter keys or values do not adhere to what you define:
+
+```ruby
+# Create filter class that inherits from JsonApiable::BaseFilter
+class API::PostFilter < JsonApiable::BaseFilter
+# Declare which filter keys are supported
+  def self.jsonapi_allowed_filters
+    {
+      # For each key, declare what values are allowed. The supported value matchers include: 
+      # 1) Array of values
+      # example.com/v1/posts?filter[status]=draft,published 
+      status: Post.statuses.keys,
+      
+      # 2) DateTime matcher - proc that checks that the provided value is a valid DateTime
+      # example.com/v1/posts?filter[published_at]='2001-02-03T04:05:06+03:00' 
+      published_at: datetime_matcher,
+      
+      # 3) Boolean matcher - proc that checks that the provided value is a boolean (true/t/1 for True, false/f/0 for False)
+      # example.com/v1/posts?filter[subscribers_only]=true       
+      subscribers_only: boolean_matcher,
+      
+      # 4) ID matcher - proc that checks that the provided ids exist for given model
+      # example.com/v1/posts?filter[ids]=10893,14596
+      ids: ids_matcher(Post),
+      
+      # Of course, you can also implement your own matchers. For example:
+      reviewed_at: recent_datetime_matcher 
+    }
+  end
+
+  # Example of custom filter value matcher
+  def self.recent_datetime_matcher
+    proc do |value|
+      datetime = Time.zone.parse(value)
+      datetime.present? && datetime > 10.years.ago && datetime < 2.years.from_now
+    end
+  end
+end
+```
+Now set the filter for actions which should support filtering:
+```ruby
+class API::PostsController < API::BaseController
+  before_action -> { set_jsonapi_filter(API::PostFilter) }, only: %i[index search]
+end
+
+```
+And you are good to go! 
+
+Incidentally, PostFilter class is also a good place to implement your filter logic:
+```ruby
+class API::PostFilter < JsonApiable::BaseFilter
+  # The following methods are available to a filter class instance:
+  # jsonapi_collection - collection on which to execute filtering
+  # jsonapi_filter_hash - a filter query hash, e.g. { 'status' => ['draft', 'published'], 'published_at' => '2001-02-03T04:05:06+03:00'  }
+  def call
+    jsonapi_collection.where(status: jsonapi_filter_hash[:status])
+  end
+end
+```
+Now you can call filter posts collection in your controller:
+```ruby
+posts = GetPosts.call
+# jsonapi_filter_class - API::PostFilter in our example
+# jsonapi_filter_hash - a filter query hash, e.g. { 'status' => ['draft', 'published'] }
+filtered_posts = jsonapi_filter_class.new(posts, jsonapi_filter_hash).call
+```
+
+
 ### Configuration
 Add an initializer to your app with the following config block:
 ```ruby

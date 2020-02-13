@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module JsonApiable
   extend ActiveSupport::Concern
   include Errors
@@ -5,8 +7,8 @@ module JsonApiable
 
   JSONAPI_CONTENT_TYPE = 'application/vnd.api+json'
 
-  attr_reader :jsonapi_page, :jsonapi_include, :jsonapi_build_params, :jsonapi_assign_params, :jsonapi_default_page_size,
-              :jsonapi_exclude_attributes, :jsonapi_exclude_relationships
+  attr_reader :jsonapi_page_hash, :jsonapi_include_array, :jsonapi_filter_hash, :jsonapi_filter_class, :jsonapi_build_params,
+              :jsonapi_assign_params, :jsonapi_default_page_size, :jsonapi_exclude_attributes, :jsonapi_exclude_relationships
 
   included do
     before_action :ensure_jsonapi_content_type
@@ -24,7 +26,6 @@ module JsonApiable
     rescue_from ForbiddenError, with: :respond_to_forbidden
     rescue_from JsonApiable.configuration.not_found_exception_class, with: :respond_to_not_found
   end
-
 
   class << self
     attr_writer :configuration
@@ -63,8 +64,11 @@ module JsonApiable
   end
 
   def jsonapi_relationship_attribute(relationship, attribute)
-    [:id, :type].include?(attribute.to_sym) ? jsonapi_relationship_data(relationship)&.dig(attribute) :
-                                              jsonapi_relationship_data(relationship)&.dig(:attributes, attribute)
+    if [:id, :type].include?(attribute.to_sym)
+      jsonapi_relationship_data(relationship)&.dig(attribute)
+    else
+      jsonapi_relationship_data(relationship)&.dig(:attributes, attribute)
+    end
   end
 
   def jsonapi_assign_params
@@ -126,16 +130,21 @@ module JsonApiable
     end
   end
 
+  def set_jsonapi_filter(filter_class)
+    @jsonapi_filter_class = filter_class
+    @jsonapi_filter_hash = FilterParser.parse_filters!(jsonapi_build_params, filter_class)
+  end
+
   def set_jsonapi_content_type
     response.headers['Content-Type'] = JSONAPI_CONTENT_TYPE
   end
 
   def parse_jsonapi_pagination
-    @jsonapi_page = PaginationParser.parse_pagination!(query_params, jsonapi_default_page_size)
+    @jsonapi_page_hash = PaginationParser.parse_pagination!(query_params, jsonapi_default_page_size)
   end
 
   def parse_jsonapi_include
-    @jsonapi_include = query_params[:include].presence&.gsub(/ /, '')&.split(',')&.map(&:to_sym).to_a
+    @jsonapi_include_array = query_params[:include].presence&.gsub(/ /, '')&.split(',')&.map(&:to_sym).to_a
   end
 
   def query_params

@@ -87,7 +87,7 @@ RSpec.describe 'Configuration' do
 
       config = JsonApiable.configuration
 
-      expect(config.valid_query_params).to eq(%w[access_token filter include page])
+      expect(config.valid_query_params).to eq(%w[id user_id access_token filter include page])
     end
   end
 end

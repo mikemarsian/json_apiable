@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module JsonApiable
   module Renderers
     def respond_to_unsupported_media_type

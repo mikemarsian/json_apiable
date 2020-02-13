@@ -4,4 +4,6 @@ class Post < ApplicationRecord
 
   validates :title, presence: true,
             length: { minimum: 5 }
+
+  enum status: %i[ draft in_review published ]
 end

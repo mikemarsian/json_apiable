@@ -69,8 +69,8 @@ RSpec.describe API::UsersController, type: :controller do
             it 'returns correct hash' do
               get_index
 
-              expect(controller.jsonapi_page[:number]).to eq(2)
-              expect(controller.jsonapi_page[:size]).to eq(2)
+              expect(controller.jsonapi_page_hash[:number]).to eq(2)
+              expect(controller.jsonapi_page_hash[:size]).to eq(2)
             end
           end
 
@@ -80,8 +80,8 @@ RSpec.describe API::UsersController, type: :controller do
             it 'returns correct hash' do
               get_index
 
-              expect(controller.jsonapi_page[:number]).to eq(2)
-              expect(controller.jsonapi_page[:size]).to eq(JsonApiable::Configuration::DEFAULT_PAGE_SIZE)
+              expect(controller.jsonapi_page_hash[:number]).to eq(2)
+              expect(controller.jsonapi_page_hash[:size]).to eq(JsonApiable::Configuration::DEFAULT_PAGE_SIZE)
             end
           end
 
@@ -91,8 +91,8 @@ RSpec.describe API::UsersController, type: :controller do
             it 'returns correct hash' do
               get_index
 
-              expect(controller.jsonapi_page[:number]).to eq(1)
-              expect(controller.jsonapi_page[:size]).to eq(2)
+              expect(controller.jsonapi_page_hash[:number]).to eq(1)
+              expect(controller.jsonapi_page_hash[:size]).to eq(2)
             end
           end
         end

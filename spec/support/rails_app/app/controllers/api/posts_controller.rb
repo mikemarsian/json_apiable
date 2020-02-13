@@ -1,4 +1,7 @@
 class API::PostsController < API::BaseController
+
+  before_action -> { set_jsonapi_filter(API::PostFilter) }, only: %i[index]
+
   def index
     @posts = Post.all
     render json: @posts

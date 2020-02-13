@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module JsonApiable
   class Configuration
     attr_accessor :valid_query_params, :supported_media_type_proc, :not_found_exception_class, :page_size

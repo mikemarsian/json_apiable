@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module JsonApiable
   class ParamsParser
     class DataParams
@@ -39,7 +41,9 @@ module JsonApiable
     end
 
     def self.build_relationships_hash(relationships, excluded_relationships, request)
-      attr_hash = {}; ids_array = []; ids_key = nil
+      attr_hash = {}
+      ids_array = []
+      ids_key = nil
 
       relationships&.each_pair do |key, data_hash|
         next if excluded_relationships&.include?(key.to_sym)
@@ -72,7 +76,7 @@ module JsonApiable
     end
 
     def self.hashify(allowed_relationships)
-      allowed_relationships.map{|rel| { rel => {}}}
+      allowed_relationships.map { |rel| { rel => {} } }
     end
   end
 end
