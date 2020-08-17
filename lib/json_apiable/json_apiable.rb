@@ -72,23 +72,29 @@ module JsonApiable
   end
 
   def jsonapi_assign_params
-    @jsonapi_assign_params ||= ParamsParser.parse_body_params(request,
-                                                              jsonapi_build_params,
-                                                              jsonapi_allowed_attributes,
-                                                              jsonapi_exclude_attributes,
-                                                              jsonapi_allowed_relationships,
-                                                              jsonapi_exclude_relationships)
+    return @jsonapi_assign_params if @jsonapi_assign_params.present? && !@invalidate_assign_params
+
+    @jsonapi_assign_params = ParamsParser.parse_body_params(request,
+                                                            jsonapi_build_params,
+                                                            jsonapi_allowed_attributes,
+                                                            jsonapi_exclude_attributes,
+                                                            jsonapi_allowed_relationships,
+                                                            jsonapi_exclude_relationships)
+    @invalidate_assign_params = false
+    @jsonapi_assign_params
   end
 
   def jsonapi_exclude_attribute(attrib_key)
     @jsonapi_exclude_attributes ||= []
     @jsonapi_exclude_attributes << attrib_key.to_sym
+    @invalidate_assign_params = true
     jsonapi_build_params.dig(:data, :attributes, attrib_key)
   end
 
   def jsonapi_exclude_relationship(rel_key)
     @jsonapi_exclude_relationships ||= []
     @jsonapi_exclude_relationships << rel_key.to_sym
+    @invalidate_assign_params = true
     jsonapi_build_params.dig(:data, :relationships, rel_key)
   end
 

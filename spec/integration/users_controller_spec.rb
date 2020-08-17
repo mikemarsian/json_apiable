@@ -165,6 +165,7 @@ RSpec.describe API::UsersController, type: :controller do
   describe 'PATCH #update' do
     let(:user) { create(:user) }
     let(:new_name) { 'John Doe' }
+    let(:new_date_of_birth) { '1975-12-12' }
     subject(:patch_update) { json_api_patch :update, id: user.id, data: update_json }
 
     context 'update attribute' do
@@ -188,13 +189,54 @@ RSpec.describe API::UsersController, type: :controller do
           it 'when value exists' do
             patch_update
 
-            expect(assigns(:name)).to eq(new_name)
+            expect(user.reload.name).to eq(new_name)
           end
 
           it 'when value does not exist' do
             patch_update
 
-            expect(assigns(:email)).to be_blank
+            expect(assigns(:jsonapi_assign_params)['email']).to be_blank
+          end
+        end
+
+        context 'jsonapi_exclude_attribute' do
+          context 'when value exists' do
+            it 'assigns new value' do
+              patch_update
+
+              expect(assigns(:jsonapi_assign_params)['name']).to eq(new_name)
+            end
+          end
+
+
+          it 'when value does not exist' do
+            patch_update
+
+            expect(assigns(:jsonapi_assign_params)['email']).to be_blank
+          end
+
+          context "when called after jsonapi_assign_params" do
+            subject(:patch_update) do
+              json_api_patch :update, id: user.id, exclude_after_assign: true, data: update_json
+            end
+            let(:update_json) do
+              {
+                "type": 'user',
+                "id": user.id,
+                "attributes": {
+                  "name": "New Name",
+                  "email": "new_email@gmail.com"
+                }
+              }
+            end
+
+            it "invalidates cache" do
+              old_email = user.email
+              expect(JsonApiable::ParamsParser).to receive(:parse_body_params).twice
+
+              patch_update
+              expect(user.reload.email).to eq(old_email)
+            end
           end
         end
       end

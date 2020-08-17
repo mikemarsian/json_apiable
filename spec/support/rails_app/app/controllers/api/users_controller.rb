@@ -13,7 +13,17 @@ class API::UsersController < API::BaseController
     @user = User.find(params[:id])
     @name = jsonapi_attribute(:name)
     @email = jsonapi_attribute(:email)
-    @user.update_attributes!(jsonapi_assign_params)
+
+    if params[:exclude_after_assign]
+      # jsonapi_assign_params called first time
+      jsonapi_assign_params
+      jsonapi_exclude_attribute(:email)
+      # jsonapi_assign_params called second time
+      @user.update_attributes!(jsonapi_assign_params)
+    else
+      @user.update_attributes!(jsonapi_assign_params)
+    end
+
     render json: @user
   end
 
