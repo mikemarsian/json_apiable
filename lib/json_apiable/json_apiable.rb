@@ -20,7 +20,7 @@ module JsonApiable
 
     rescue_from ArgumentError, with: :respond_to_bad_argument
     rescue_from ActionController::UnpermittedParameters, with: :respond_to_bad_argument
-    rescue_from JSONAPI::Serializer::UnsupportedIncludeError, with: :respond_to_bad_argument
+    rescue_from JSONAPI::Serializer::UnsupportedIncludeError, with: :respond_to_exception_raised
     rescue_from MalformedRequestError, with: :respond_to_malformed_request
     rescue_from UnprocessableEntityError, with: :respond_to_unprocessable_entity
     rescue_from UnauthorizedError, with: :respond_to_unauthorized

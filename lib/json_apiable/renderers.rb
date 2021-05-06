@@ -32,6 +32,11 @@ module JsonApiable
       json_render_errors json: errors, status: :bad_request
     end
 
+    def respond_to_exception_raised(err_msg)
+      errors = [{ title: 'Invalid Argument', detail: err_msg.message }]
+      json_render_errors json: errors, status: :bad_request
+    end
+
     def respond_to_malformed_request(err_msg = nil)
       errors = [{ title: 'Malformed Request', detail: err_msg.to_s }]
       json_render_errors json: errors, status: :bad_request
