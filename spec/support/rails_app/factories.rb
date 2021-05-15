@@ -11,7 +11,7 @@ FactoryBot.define do
   factory :post do
     title { Faker::Book.title }
     text { Faker::Quote.famous_last_words }
-    association :author, factory: :user
+    association :user, factory: :user
   end
 
   factory :comment do

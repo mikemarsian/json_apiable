@@ -19,9 +19,9 @@ class API::UsersController < API::BaseController
       jsonapi_assign_params
       jsonapi_exclude_attribute(:email)
       # jsonapi_assign_params called second time
-      @user.update_attributes!(jsonapi_assign_params)
+      @user.update!(jsonapi_assign_params)
     else
-      @user.update_attributes!(jsonapi_assign_params)
+      @user.update!(jsonapi_assign_params)
     end
 
     render json: @user

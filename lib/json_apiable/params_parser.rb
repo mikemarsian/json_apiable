@@ -34,7 +34,7 @@ module JsonApiable
       attributes&.each do |key, value|
         next if excluded_attributes&.include?(key.to_sym)
 
-        new_key = value.is_a?(ActionController::Parameters) ? "#{key}_attributes" : key
+        new_key = nested_attributes?(value) ? "#{key}_attributes" : key
         attrs_hash[new_key] = value.is_a?(ActionController::Parameters) ? value.to_h : value
       end
       attrs_hash
@@ -77,6 +77,10 @@ module JsonApiable
 
     def self.hashify(allowed_relationships)
       allowed_relationships.map { |rel| { rel => {} } }
+    end
+
+    def self.nested_attributes?(value)
+      value.is_a?(ActionController::Parameters) || value.is_a?(Array)
     end
   end
 end

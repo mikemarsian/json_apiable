@@ -6,11 +6,11 @@ RSpec.describe API::PostsController, type: :controller do
     context 'include' do
       context 'valid request' do
         context 'non-empty include' do
-          subject(:get_index) { json_api_get :index, include: 'author, posts' }
+          subject(:get_index) { json_api_get :index, include: 'user, posts' }
           it 'include is set' do
             get_index
 
-            expect(controller.jsonapi_include_array).to eq([:author, :posts])
+            expect(controller.jsonapi_include_array).to eq([:user, :posts])
           end
         end
         context 'empty include' do
@@ -147,6 +147,54 @@ RSpec.describe API::PostsController, type: :controller do
                                                        }] }.to_json)
           end
         end
+      end
+    end
+  end
+
+  describe 'POST #create' do
+    let(:user) { create(:user) }
+    subject(:post_create) { json_api_post :create, data: create_json }
+
+    context 'valid' do
+      let(:create_json) do
+        {
+          "type": 'post',
+          "attributes": {
+            "title": "My first post",
+            "text": "And so it begins...",
+            "tags": [
+              {
+                "key": "genre",
+                "value": "fiction"
+              },
+              {
+                "key": "region",
+                "value": "middle-east"
+              }
+            ]
+          },
+          "relationships": {
+            "user": {
+              "data": { "type": 'user', "id": user.id.to_s }
+            },
+          }
+        }
+      end
+
+      it 'returns ok' do
+        post_create
+
+        expect(response).to have_http_status(:ok)
+      end
+
+      it 'creates tags' do
+        expect { post_create }.to change { PostTag.count }.by(2)
+
+        expect(PostTag.first.key).to eq("genre")
+        expect(PostTag.first.value).to eq("fiction")
+        expect(PostTag.second.key).to eq("region")
+        expect(PostTag.second.value).to eq("middle-east")
+
       end
     end
   end

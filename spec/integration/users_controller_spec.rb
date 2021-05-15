@@ -305,11 +305,7 @@ RSpec.describe API::UsersController, type: :controller do
             patch_update
 
             expect(response).to have_http_status(:bad_request)
-            expect(response.body).to eq({ 'errors' => [{
-                                                           'title' => 'Malformed Request',
-                                                           'detail' => 'param is missing or the value is empty: data',
-                                                           'status' => '400'
-                                                       }] }.to_json)
+            expect(JSON.parse(response.body)["errors"].first["detail"]).to include('param is missing or the value is empty: data')
           end
         end
       end

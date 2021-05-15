@@ -3,5 +3,7 @@ source 'https://rubygems.org'
 
 # this file is pretty much only used for adding migrations
 gem 'rails'
-gem 'json_apiable', path: "~/dev/json_apiable"
+gem 'jsonapi-serializer'
+# NOTE: update the path to the location of the project
+gem 'json_apiable', path: "~/dev/wec/json_apiable"
 gem 'sqlite3'
