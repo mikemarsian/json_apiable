@@ -13,12 +13,23 @@ RSpec.describe API::PostsController, type: :controller do
             expect(controller.jsonapi_include_array).to eq([:user, :posts])
           end
         end
+
         context 'empty include' do
           subject(:get_index) { json_api_get :index, include: '' }
           it 'include is set' do
             get_index
 
             expect(controller.jsonapi_include_array).to eq([])
+          end
+        end
+
+        context 'nested include' do
+          subject(:get_index) { json_api_get :index, include: 'user, posts.comments' }
+
+          it 'include is set' do
+            get_index
+
+            expect(controller.jsonapi_include_array).to eq([:user, :"posts.comments"])
           end
         end
       end
