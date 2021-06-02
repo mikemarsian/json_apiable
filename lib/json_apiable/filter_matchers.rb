@@ -10,7 +10,7 @@ module JsonApiable
 
     module_function :matches?
 
-    def not_blank_matcher
+    def any_non_blank_matcher
       proc do |value|
         handle_error(value) do
           value.present?

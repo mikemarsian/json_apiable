@@ -1,5 +1,8 @@
 Changelog
 =========
+## 0.6.2 06/02/2021
+* Renaming not_blank_matcher to any_non_blank_matcher
+
 ## 0.6.1 06/02/2021
 * Adding not_blank_matcher to filter-matchers
 
