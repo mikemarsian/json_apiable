@@ -1,5 +1,8 @@
 Changelog
 =========
+## 0.6.1 06/02/2021
+* Adding not_blank_matcher to filter-matchers
+
 ## 0.6.0 05/15/2021
 * Adding support for "has_many" nested attributes
 * Updating specs

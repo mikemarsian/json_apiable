@@ -1,7 +1,7 @@
 PATH
   remote: ../../..
   specs:
-    json_apiable (0.6.0)
+    json_apiable (0.6.1)
       activerecord
       activesupport
       jsonapi-serializer
