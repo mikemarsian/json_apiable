@@ -10,15 +10,19 @@ module JsonApiable
 
     module_function :matches?
 
+    def not_blank_matcher
+      proc do |value|
+        handle_error(value) do
+          value.present?
+        end
+      end
+    end
+
     # returns true for boolean values, false for any other
     def boolean_matcher
       proc do |value|
         handle_error(value) do
-          if true_matcher.call(value) || (value == false || value =~ /^(false|f|0)$/i)
-            true
-          else
-            false
-          end
+          true_matcher.call(value) || (value == false || value =~ /^(false|f|0)$/i)
         end
       end
     end
@@ -27,11 +31,7 @@ module JsonApiable
     def true_matcher
       proc do |value|
         handle_error(value) do
-          if value == true || value =~ /^(true|t|1)$/i
-            true
-          else
-            false
-          end
+          value == true || value =~ /^(true|t|1)$/i
         end
       end
     end
